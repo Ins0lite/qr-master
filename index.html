@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Studio Master V19 - Pro & Share</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #f0f2f5; --bg-app: #ffffff; --text-main: #333333; --text-muted: #555555; --border-color: #cccccc; --tab-bg: #f8f9fa; --primary: #007bff;
+        }
+        [data-theme="dark"] {
+            --bg-body: #121212; --bg-app: #1e1e1e; --text-main: #f0f2f5; --text-muted: #aaaaaa; --border-color: #444444; --tab-bg: #2d2d2d;
+        }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 15px; display: flex; justify-content: center; transition: all 0.3s; }
+        .app-container { background: var(--bg-app); width: 100%; max-width: 520px; padding: 20px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); box-sizing: border-box; position: relative; }
+        
+        .header-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        h2, h3 { margin: 0; font-size: 18px; }
+        .theme-toggle { background: var(--tab-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 12px; border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: bold; }
+
+        .section-title { font-size: 12px; font-weight: bold; margin: 12px 0 6px 0; color: var(--text-main); }
+        .preset-container { display: flex; gap: 6px; margin-bottom: 10px; }
+        .preset-btn { flex: 1; padding: 8px; font-size: 11px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; background: var(--bg-app); color: var(--text-main); font-weight: bold; }
+        
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background: var(--tab-bg); padding: 8px; border-radius: 8px; margin-bottom: 10px; }
+        .color-item { display: flex; flex-direction: column; gap: 4px; font-size: 11px; text-align: center; }
+        input[type="color"] { width: 100%; height: 30px; border: none; cursor: pointer; background: transparent; }
+
+        .font-selector { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 5px; margin-bottom: 10px; }
+        .font-btn { padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-app); color: var(--text-main); font-size: 13px; cursor: pointer; font-weight: bold; white-space: nowrap; }
+        .font-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        .main-tabs { display: flex; border-bottom: 2px solid var(--border-color); margin-bottom: 12px; margin-top: 10px; }
+        .tab-btn { flex: 1; padding: 10px; background: none; border: none; font-size: 13px; font-weight: bold; cursor: pointer; color: var(--text-muted); text-align: center; }
+        .tab-btn.active { color: var(--primary); border-bottom: 3px solid var(--primary); }
+
+        .tab-panel { display: none; background: var(--tab-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; }
+        .tab-panel.active { display: block; }
+
+        .weight-bar-container { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-size: 11px; font-weight: bold; }
+        .weight-bar { flex: 1; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; position: relative; }
+        .weight-fill { height: 100%; width: 0%; transition: width 0.3s, background-color 0.3s; }
+
+        .btn-manager-trigger { width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 13px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        
+        .contact-manager-page { display: none; position: absolute; top: 0; left: 0; width: 100%; min-height: 100%; background: var(--bg-app); z-index: 100; border-radius: 16px; padding: 20px; box-sizing: border-box; }
+        .contact-manager-page.active { display: block; }
+        
+        .collapsible-trigger { background: #6c757d; color: white; width: 100%; text-align: left; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; margin-bottom: 10px; display: flex; justify-content: space-between; }
+        .collapsible-content { display: none; background: var(--tab-bg); padding: 12px; border-radius: 6px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .collapsible-content.open { display: block; }
+
+        .form-group { margin-bottom: 10px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        label { display: block; margin-bottom: 4px; font-size: 11px; color: var(--text-muted); font-weight: bold; }
+        input[type="text"], input[type="file"], select, input[type="date"] { width: 100%; padding: 8px; border: 1px solid var(--border-color); background: var(--bg-app); color: var(--text-main); border-radius: 6px; box-sizing: border-box; font-size: 13px; }
+        
+        .custom-fields-area { background: rgba(0,0,0,0.03); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px dashed var(--border-color); }
+        .custom-field-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+
+        .search-box-container { background: rgba(0,0,0,0.03); padding: 8px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .batch-actions-area { background: #e2f0d9; padding: 8px; border-radius: 6px; margin-bottom: 10px; display: none; font-size: 11px; align-items: center; justify-content: space-between; gap: 6px;}
+
+        .directory-box { background: var(--tab-bg); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); max-height: 220px; overflow-y: auto; margin-top: 5px; }
+        .contact-card { background: var(--bg-app); padding: 8px; border-radius: 6px; margin-bottom: 6px; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 8px;}
+        .contact-card img { width: 35px; height: 35px; border-radius: 50%; object-fit: cover; }
+
+        .qr-section { margin-top: 15px; text-align: center; border-top: 1px dashed var(--border-color); padding-top: 15px; }
+        #preview-badge { background: #ffffff; padding: 16px; border-radius: 24px; display: inline-block; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 12px; }
+        .qr-container-relative { position: relative; display: inline-block; padding: 10px; border: 6px solid #8a2be2; border-radius: 16px; background: transparent; }
+        #qrcode-target img, #qrcode-target canvas { max-width: 200px; height: auto; display: block; margin: 0 auto; }
+        
+        .qr-snap-logo { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 44px; height: 44px; background: white; border-radius: 10px; box-shadow: 0 3px 10px rgba(0,0,0,0.2); display: none; overflow: hidden; padding: 2px; box-sizing: border-box; }
+        .qr-snap-logo img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .badge-slogan { margin-top: 12px; background: #8a2be2; color: white; padding: 8px 20px; border-radius: 25px; font-weight: bold; font-size: 13px; text-transform: uppercase; display: inline-block; }
+
+        .btn { width: 100%; padding: 11px; border: none; border-radius: 6px; font-weight: bold; font-size: 12px; cursor: pointer; margin-top: 5px; }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        .btn-vector { background-color: #ff9f43; color: white; }
+        .btn-share { background-color: #00cbc6; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; padding: 4px 8px; font-size: 11px; border-radius: 4px; border: none; cursor: pointer; }
+        .btn-mini-success { background-color: #28a745; color: white; border: none; border-radius: 4px; padding: 4px 8px; font-size: 11px; cursor: pointer; font-weight: bold; }
+        
+        .toggle-switch-mode { display: flex; background: var(--bg-app); border: 1px solid var(--border-color); border-radius: 6px; margin-bottom: 10px; overflow: hidden; }
+        .toggle-mode-btn { flex: 1; padding: 6px; font-size: 11px; font-weight: bold; border: none; background: none; color: var(--text-muted); cursor: pointer; }
+        .toggle-mode-btn.active { background: var(--primary); color: white; }
+
+        .logo-preview-container { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
+        .logo-preview-mini { width: 40px; height: 40px; border: 1px dashed var(--border-color); border-radius: 6px; object-fit: contain; display: none; background: #fff; }
+
+        #hidden-master { display: none; }
+        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: #333; color: #fff; padding: 12px 24px; border-radius: 30px; font-size: 13px; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 1000; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .toast-notification.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header-area">
+        <h2>QR Studio Master V19 🚀</h2>
+        <button class="theme-toggle" onclick="toggleTheme()">Mode Sombre</button>
+    </div>
+
+    <div class="section-title">Styles Prédéfinis Rapides :</div>
+    <div class="preset-container">
+        <button class="preset-btn" onclick="applyPreset('#8A2BE2', '#000000', '#FFFFFF', 'Arial')">Classic Purp</button>
+        <button class="preset-btn" onclick="applyPreset('#FF007F', '#111111', '#EEFF00', 'Impact')">Néon Cyber</button>
+        <button class="preset-btn" onclick="applyPreset('#D4AF37', '#D4AF37', '#1A1A1A', 'Georgia')">Luxe Or ✨</button>
+    </div>
+    
+    <div class="grid-3">
+        <div class="color-item"><label>Bordure</label><input type="color" id="theme-color" value="#8a2be2" onchange="updateDesign()"></div>
+        <div class="color-item"><label>Points QR</label><input type="color" id="qr-color" value="#000000" onchange="updateDesign()"></div>
+        <div class="color-item"><label>Fond Badge</label><input type="color" id="bg-badge-color" value="#ffffff" onchange="updateDesign()"></div>
+    </div>
+
+    <div class="section-title">Style de Police du Slogan :</div>
+    <div class="font-selector">
+        <button class="font-btn active" id="f-Arial" style="font-family: Arial;" onclick="updateFont('Arial')">Arial</button>
+        <button class="font-btn" id="f-Times" style="font-family: 'Times New Roman';" onclick="updateFont('Times New Roman')">Times</button>
+        <button class="font-btn" id="f-Impact" style="font-family: Impact;" onclick="updateFont('Impact')">Impact</button>
+        <button class="font-btn" id="f-Courier" style="font-family: 'Courier New';" onclick="updateFont('Courier New')">Courier</button>
+        <button class="font-btn" id="f-Georgia" style="font-family: Georgia;" onclick="updateFont('Georgia')">Georgia</button>
+    </div>
+
+    <div class="form-group">
+        <label style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Logo Central (PNG/JPG) :</span>
+            <button type="button" class="btn-danger" id="btn-remove-logo" style="display:none;" onclick="removeLogo()">❌ Supprimer</button>
+        </label>
+        <input type="file" id="logo-file" accept="image/*" onchange="handleLogoUpload(this)">
+        <div class="logo-preview-container">
+            <img id="mini-logo-view" class="logo-preview-mini" alt="Miniature">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Texte / Slogan en bas :</label>
+        <input type="text" id="slogan-input" value="Authentic J'adore !" oninput="updateDesign()">
+    </div>
+
+    <div class="main-tabs">
+        <button class="tab-btn active" id="t-btn-offline" onclick="switchTab('offline')">Générer vCard Directe</button>
+        <button class="tab-btn" id="t-btn-cloud" onclick="switchTab('cloud')">Lien Google Drive</button>
+    </div>
+
+    <div id="panel-offline" class="tab-panel active">
+        <div class="toggle-switch-mode">
+            <button class="toggle-mode-btn active" id="mode-manual-btn" onclick="setOfflineMode('manual')">✍️ Saisie Directe</button>
+            <button class="toggle-mode-btn" id="mode-select-btn" onclick="setOfflineMode('select')">📁 Piocher Contacts</button>
+        </div>
+
+        <div id="offline-manual-fields">
+            <div class="grid-2">
+                <div class="form-group"><label>Nom & Prénom</label><input type="text" id="direct-name" placeholder="Nom complet..." oninput="updateDesign()"></div>
+                <div class="form-group"><label>Téléphone Mobile</label><input type="text" id="direct-phone" placeholder="+229..." oninput="updateDesign()"></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>Entreprise</label><input type="text" id="direct-company" placeholder="Société..." oninput="updateDesign()"></div>
+                <div class="form-group"><label>Profession</label><input type="text" id="direct-title" placeholder="Métier..." oninput="updateDesign()"></div>
+            </div>
+        </div>
+
+        <div id="offline-select-fields" style="display: none;">
+            <div class="form-group">
+                <label style="color: #007bff; display: flex; justify-content: space-between;">
+                    <span>📁 Choisir dans la base de données :</span>
+                    <span id="sync-badge" style="display:none; color:#28a745; font-weight:bold;">🔄 Synchronisé</span>
+                </label>
+                <input type="text" id="search-main-dropdown" placeholder="Filtrer par nom..." oninput="filterMainDropdown()">
+                <select id="select-contact-offline" onchange="loadSelectedContactIntoFields()" style="margin-top:5px;">
+                    <option value="">-- Aucun contact sélectionné --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="weight-bar-container">
+            <span>Statut du QR :</span>
+            <div class="weight-bar">
+                <div id="weight-indicator" class="weight-fill"></div>
+            </div>
+            <span id="weight-status-text">Vide</span>
+        </div>
+        
+        <button class="btn btn-secondary" style="margin-top:10px; background:#4a5568;" onclick="downloadDirectVCF()">💾 Télécharger la Fiche vCard (.vcf)</button>
+    </div>
+
+    <div id="panel-cloud" class="tab-panel">
+        <div class="form-group">
+            <label>Collez le lien partagé de votre Google Drive :</label>
+            <input type="text" id="input-cloud" placeholder="https://drive.google.com/file/d/..." oninput="updateDesign()">
+        </div>
+        <p style="font-size:11px; color: green; margin:0; font-weight:bold;">✨ Mode Cloud : QR léger garanti, scannable instantanément sur tous supports.</p>
+    </div>
+
+    <button class="btn-manager-trigger" onclick="toggleManagerPage(true)">
+        📂 Ouvrir Répertoire IndexedDB & Système de Sauvegarde
+    </button>
+
+    <div class="contact-manager-page" id="contact-manager-view">
+        <div class="header-area" style="border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+            <h3>🗂️ Répertoire Pro (IndexedDB)</h3>
+            <button class="theme-toggle" style="background:#dc3545; color:white; border:none;" onclick="toggleManagerPage(false)">✖ Fermer</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;">
+            <button class="btn-mini-success" onclick="exportFullDatabaseBackup()">📤 Exporter Backup complet (.json)</button>
+            <button class="btn-mini-success" style="background:#ff9f43;" onclick="document.getElementById('import-db-file').click()">📥 Importer Backup complet</button>
+            <input type="file" id="import-db-file" accept=".json" style="display:none;" onchange="importFullDatabaseBackup(this)">
+        </div>
+
+        <button class="collapsible-trigger" onclick="toggleAccordion()">
+            <span>➕ Archiver un Nouveau Contact</span>
+            <span id="acc-icon">▼ Déplier</span>
+        </button>
+        
+        <div class="collapsible-content" id="form-accordion-content">
+            <div class="form-group"><label>Photo (Compressée automatiquement)</label><input type="file" id="c-avatar" accept="image/*" onchange="handleAvatar(this)"></div>
+            <div class="grid-2">
+                <div class="form-group"><label>Nom & Prénom</label><input type="text" id="c-name" placeholder="Ex: Marcelline HOUNNOU"></div>
+                <div class="form-group"><label>Entreprise</label><input type="text" id="c-company" placeholder="Ex: Authentic Institut"></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>Profession</label><input type="text" id="c-title" placeholder="Artisane"></div>
+                <div class="form-group"><label>Anniversaire</label><input type="date" id="c-birth"></div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group"><label>Mobile 1</label><input type="text" id="c-phone1" placeholder="+229..."></div>
+                <div class="form-group"><label>Téléphone 2</label><input type="text" id="c-phone2"></div>
+            </div>
+            <div class="form-group"><label>Adresse</label><input type="text" id="c-address"></div>
+            <div class="form-group"><label>Google Maps</label><input type="text" id="c-maps"></div>
+            
+            <div class="custom-fields-area">
+                <label style="color:#007bff; margin-bottom:6px;">🎛️ Cases Personnalisées Spéciales (Multi-choix) :</label>
+                <div id="dynamic-custom-fields-container">
+                    <div class="custom-field-row">
+                        <input type="text" class="c-custom-title" placeholder="Ex: Instagram" style="width:40%;">
+                        <input type="text" class="c-custom-val" placeholder="Ex: @compte" style="width:50%;">
+                        <button type="button" class="btn-danger" style="padding:6px; margin:0;" onclick="removeCustomFieldRow(this)">❌</button>
+                    </div>
+                </div>
+                <button type="button" class="btn-mini-success" style="margin-top:5px;" onclick="addCustomFieldRow()">➕ Ajouter un champ personnalisé</button>
+            </div>
+
+            <div class="grid-2">
+                <div class="form-group"><label>Groupe</label><input type="text" id="c-group" placeholder="Général" list="existing-groups"><datalist id="existing-groups"></datalist></div>
+                <div class="form-group" style="align-self: flex-end;"><button class="btn btn-primary" style="margin:0;" onclick="saveContactLocal()">💾 Sauvegarder</button></div>
+            </div>
+        </div>
+
+        <div class="search-box-container">
+            <div class="grid-2">
+                <div class="form-group"><label>🔍 Chercher (Nom, Métier...)</label><input type="text" id="search-keyword" placeholder="Recherche..." oninput="renderDirectoryList()"></div>
+                <div class="form-group"><label>⚙️ Trier par :</label>
+                    <select id="sort-order" onchange="renderDirectoryList()">
+                        <option value="date-desc">Plus récent d'abord</option>
+                        <option value="date-asc">Plus ancien d'abord</option>
+                        <option value="alpha-name">Nom (A -> Z)</option>
+                        <option value="alpha-title">Profession (A -> Z)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin:0;"><label>📁 Filtrer par Groupe :</label><select id="directory-filter" onchange="renderDirectoryList()"></select></div>
+        </div>
+
+        <div class="batch-actions-area" id="batch-area">
+            <span id="batch-count" style="font-weight:bold; color:#1e1e1e;">0 coché(s)</span>
+            <div style="display:flex; gap:4px; max-width: 70%;"><input type="text" id="new-batch-group-name" placeholder="Nouveau nom groupe..." style="padding:4px; font-size:11px;"><button class="btn btn-primary" style="padding:4px 8px; margin:0; font-size:11px;" onclick="applyBatchGroup()">Créer Groupe</button></div>
+        </div>
+
+        <div class="directory-box" id="directory-list-target"></div>
+        <div class="grid-2" style="margin-top: 10px;"><button class="btn btn-secondary" onclick="exportGroupVCard()">📤 Exporter Groupe (.VCF)</button></div>
+    </div>
+
+    <div class="qr-section">
+        <div id="preview-badge">
+            <div class="qr-container-relative" id="ui-border">
+                <div id="qrcode-target"></div>
+                <div class="qr-snap-logo" id="ui-snap-logo"></div>
+            </div>
+            <br>
+            <div class="badge-slogan" id="ui-slogan">Authentic J'adore !</div>
+        </div>
+        
+        <div class="grid-3">
+            <button class="btn btn-primary" onclick="downloadBadge()">Standard PNG</button>
+            <button class="btn btn-vector" onclick="downloadSVGVectoriel()">Vectoriel SVG</button>
+            <button class="btn btn-share" onclick="shareQRCodeNative()">Partager 📲</button>
+        </div>
+    </div>
+</div>
+
+<div id="hidden-master"><div id="pure-qr-hd"></div></div>
+<div id="toast-box" class="toast-notification">Notification</div>
+
+<script>
+    const DB_NAME = 'QRStudioMasterDB';
+    const DB_VERSION = 1;
+    const STORE_NAME = 'contacts';
+    let db;
+
+    function initDB(callback) {
+        let request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = function(e) {
+            let dbInstance = e.target.result;
+            if (!dbInstance.objectStoreNames.contains(STORE_NAME)) {
+                dbInstance.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+        };
+        request.onsuccess = function(e) {
+            db = e.target.result;
+            callback();
+        };
+        request.onerror = function() { showToast("❌ Échec de l'initialisation de la base IndexedDB."); };
+    }
+
+    function getAllContactsDB(callback) {
+        let transaction = db.transaction([STORE_NAME], 'readonly');
+        let store = transaction.objectStore(STORE_NAME);
+        let request = store.getAll();
+        request.onsuccess = function() { callback(request.result); };
+    }
+
+    function putContactDB(contact, callback) {
+        let transaction = db.transaction([STORE_NAME], 'readwrite');
+        let store = transaction.objectStore(STORE_NAME);
+        let request = store.put(contact);
+        request.onsuccess = function() { callback(); };
+    }
+
+    // INTERFACE DE FIX THEME AMELIOREE V19
+    function toggleTheme() {
+        const doc = document.documentElement;
+        const btn = document.querySelector('.theme-toggle');
+        if (doc.getAttribute('data-theme') === 'dark') {
+            doc.removeAttribute('data-theme');
+            btn.textContent = "Mode Sombre";
+        } else {
+            doc.setAttribute('data-theme', 'dark');
+            btn.textContent = "Mode Clair";
+        }
+    }
+
+    function deleteContactDB(id, callback) {
+        let transaction = db.transaction([STORE_NAME], 'readwrite');
+        let store = transaction.objectStore(STORE_NAME);
+        let request = store.delete(id);
+        request.onsuccess = function() { callback(); };
+    }
+
+    let activeTab = 'offline';
+    let offlineMode = 'manual';
+    let selectedFontFamily = 'Arial';
+    let uploadedLogoBase64 = null;
+    let currentAvatarBase64 = null;
+    let selectedContactCustoms = [];
+
+    function showToast(text) {
+        const toast = document.getElementById('toast-box');
+        toast.textContent = text;
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 2500);
+    }
+
+    function applyPreset(border, qr, bg, font) {
+        document.getElementById('theme-color').value = border;
+        document.getElementById('qr-color').value = qr;
+        document.getElementById('bg-badge-color').value = bg;
+        updateFont(font);
+    }
+
+    function updateFont(font) {
+        selectedFontFamily = font;
+        document.querySelectorAll('.font-btn').forEach(b => b.classList.remove('active'));
+        const cleanFont = font.split("'").join("").split(" ")[0];
+        const btn = document.getElementById(`f-${cleanFont}`);
+        if(btn) btn.classList.add('active');
+        updateDesign();
+    }
+
+    function compressImage(base64Str, maxWidth, maxHeight, callback) {
+        const img = new Image();
+        img.src = base64Str;
+        img.onload = function() {
+            let width = img.width;
+            let height = img.height;
+            if (width > height) { if (width > maxWidth) { height *= maxWidth / width; width = maxWidth; } }
+            else { if (height > maxHeight) { width *= maxHeight / height; height = maxHeight; } }
+            const canvas = document.createElement('canvas');
+            canvas.width = width; canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', 0.75));
+        };
+    }
+
+    function handleLogoUpload(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result, 150, 150, function(compressedBase64) {
+                    uploadedLogoBase64 = compressedBase64;
+                    document.getElementById('btn-remove-logo').style.display = 'inline-block';
+                    const miniView = document.getElementById('mini-logo-view');
+                    miniView.src = compressedBase64;
+                    miniView.style.display = 'block';
+                    updateDesign();
+                });
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removeLogo() { 
+        uploadedLogoBase64 = null; 
+        document.getElementById('logo-file').value = ''; 
+        document.getElementById('btn-remove-logo').style.display = 'none'; 
+        const miniView = document.getElementById('mini-logo-view');
+        miniView.src = '';
+        miniView.style.display = 'none';
+        updateDesign(); 
+    }
+
+    function switchTab(tab) {
+        activeTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(`t-btn-${tab}`).classList.add('active');
+        document.getElementById(`panel-${tab}`).classList.add('active');
+        updateDesign();
+    }
+
+    function setOfflineMode(mode) {
+        offlineMode = mode;
+        document.getElementById('mode-manual-btn').classList.toggle('active', mode === 'manual');
+        document.getElementById('mode-select-btn').classList.toggle('active', mode === 'select');
+        document.getElementById('offline-manual-fields').style.display = (mode === 'manual') ? 'block' : 'none';
+        document.getElementById('offline-select-fields').style.display = (mode === 'select') ? 'block' : 'none';
+        const syncBadge = document.getElementById('sync-badge');
+        if(mode === 'manual') {
+            selectedContactCustoms = [];
+            syncBadge.style.display = 'none';
+        } else if (document.getElementById('select-contact-offline').value) {
+            syncBadge.style.display = 'inline';
+        }
+        updateDesign();
+    }
+
+    function toggleManagerPage(open) {
+        document.getElementById('contact-manager-view').classList.toggle('active', open);
+        if(!open) { updateOfflineDropdown(); updateDesign(); } else { updateGroupDatalists(); renderDirectoryList(); }
+    }
+
+    function toggleAccordion() {
+        const content = document.getElementById('form-accordion-content');
+        const icon = document.getElementById('acc-icon');
+        content.classList.toggle('open'); icon.textContent = content.classList.contains('open') ? '▲ Replier' : '▼ Déplier';
+    }
+
+    function addCustomFieldRow() {
+        const container = document.getElementById('dynamic-custom-fields-container');
+        const row = document.createElement('div');
+        row.className = "custom-field-row";
+        row.innerHTML = `
+            <input type="text" class="c-custom-title" placeholder="Ex: TikTok" style="width:40%;">
+            <input type="text" class="c-custom-val" placeholder="Ex: @lien" style="width:50%;">
+            <button type="button" class="btn-danger" style="padding:6px; margin:0;" onclick="removeCustomFieldRow(this)">❌</button>
+        `;
+        container.appendChild(row);
+    }
+
+    function removeCustomFieldRow(btn) { btn.parentElement.remove(); }
+
+    function handleAvatar(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                compressImage(e.target.result, 120, 120, function(compressedBase64) {
+                    currentAvatarBase64 = compressedBase64;
+                });
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function saveContactLocal() {
+        const name = document.getElementById('c-name').value.trim();
+        if(!name) { showToast("⚠️ Le nom complet est obligatoire."); return; }
+        
+        const customFields = [];
+        const titles = document.querySelectorAll('.c-custom-title');
+        const vals = document.querySelectorAll('.c-custom-val');
+        titles.forEach((t, i) => {
+            const tV = t.value.trim(); const vV = vals[i].value.trim();
+            if(tV && vV) customFields.push({ title: tV, val: vV });
+        });
+
+        let newContact = {
+            id: Date.now(), name,
+            company: document.getElementById('c-company').value.trim(),
+            title: document.getElementById('c-title').value.trim(),
+            birth: document.getElementById('c-birth').value,
+            phone1: document.getElementById('c-phone1').value.trim(),
+            phone2: document.getElementById('c-phone2').value.trim(),
+            address: document.getElementById('c-address').value.trim(),
+            maps: document.getElementById('c-maps').value.trim(),
+            customFields: customFields,
+            group: document.getElementById('c-group').value.trim() || "Général",
+            avatar: currentAvatarBase64, updatedAt: Date.now()
+        };
+
+        putContactDB(newContact, function() {
+            showToast("✅ Contact enregistré avec succès dans IndexedDB !");
+            document.querySelectorAll('#form-accordion-content input:not([type="button"])').forEach(i => i.value = '');
+            document.getElementById('dynamic-custom-fields-container').innerHTML = `
+                <div class="custom-field-row">
+                    <input type="text" class="c-custom-title" placeholder="Ex: Instagram" style="width:40%;">
+                    <input type="text" class="c-custom-val" placeholder="Ex: @compte" style="width:50%;">
+                    <button type="button" class="btn-danger" style="padding:6px; margin:0;" onclick="removeCustomFieldRow(this)">❌</button>
+                </div>
+            `;
+            currentAvatarBase64 = null;
+            toggleAccordion(); updateGroupDatalists(); renderDirectoryList(); updateOfflineDropdown();
+        });
+    }
+
+    function updateGroupDatalists() {
+        getAllContactsDB(function(contacts) {
+            const groups = [...new Set(contacts.map(c => c.group))];
+            document.getElementById('existing-groups').innerHTML = groups.map(g => `<option value="${g}">`).join('');
+            const filter = document.getElementById('directory-filter'); const oldV = filter.value || "Tous";
+            filter.innerHTML = `<option value="Tous">-- Tous les Groupes --</option>` + groups.map(g => `<option value="${g}">${g}</option>`).join(''); filter.value = oldV;
+        });
+    }
+
+    function renderDirectoryList() {
+        getAllContactsDB(function(contacts) {
+            const container = document.getElementById('directory-list-target');
+            const filterVal = document.getElementById('directory-filter').value || "Tous";
+            const keyword = document.getElementById('search-keyword').value.toLowerCase().trim();
+            const sortVal = document.getElementById('sort-order').value;
+            container.innerHTML = ""; let data = [...contacts];
+
+            if(filterVal !== "Tous") data = data.filter(c => c.group === filterVal);
+            if(keyword !== "") data = data.filter(c => c.name.toLowerCase().includes(keyword) || c.company.toLowerCase().includes(keyword) || c.title.toLowerCase().includes(keyword));
+            if(sortVal === "date-desc") data.sort((a,b) => b.updatedAt - a.updatedAt);
+            if(sortVal === "date-asc") data.sort((a,b) => a.updatedAt - b.updatedAt);
+            if(sortVal === "alpha-name") data.sort((a,b) => a.name.localeCompare(b.name));
+            if(sortVal === "alpha-title") data.sort((a,b) => a.title.localeCompare(b.title));
+
+            if(data.length === 0) { container.innerHTML = `<p style="text-align:center;font-size:12px;color:gray;">Aucun contact archivé.</p>`; document.getElementById('batch-area').style.display = "none"; return; }
+
+            data.forEach(c => {
+                const card = document.createElement('div'); card.className = "contact-card";
+                const imgHtml = c.avatar ? `<img src="${c.avatar}">` : `<div style="width:35px;height:35px;border-radius:50%;background:#ccc;display:inline-block;"></div>`;
+                card.innerHTML = `<div style="display:flex; align-items:center; gap:10px; flex:1;"><input type="checkbox" class="batch-checkbox" value="${c.id}" onchange="checkBatchSelection()">${imgHtml}<div style="font-size:12px;"><strong>${c.name}</strong><span style="display:block;font-size:10px;color:gray;">${c.title || 'Sans profession'} - <i>${c.group}</i></span></div></div><button class="btn-danger" onclick="deleteContact(${c.id})">🗑️</button>`;
+                container.appendChild(card);
+            });
+            checkBatchSelection();
+        });
+    }
+
+    function checkBatchSelection() {
+        const checked = document.querySelectorAll('.batch-checkbox:checked'); const area = document.getElementById('batch-area');
+        if(checked.length > 0) { area.style.display = "flex"; document.getElementById('batch-count').textContent = `${checked.length} coché(s)`; } else { area.style.display = "none"; }
+    }
+
+    function applyBatchGroup() {
+        const groupName = document.getElementById('new-batch-group-name').value.trim(); if(!groupName) { showToast("⚠️ Nom du groupe manquant."); return; }
+        const checked = document.querySelectorAll('.batch-checkbox:checked');
+        let processed = 0;
+        checked.forEach(cb => {
+            const id = parseInt(cb.value);
+            let transaction = db.transaction([STORE_NAME], 'readwrite');
+            let store = transaction.objectStore(STORE_NAME);
+            store.get(id).onsuccess = function(e) {
+                let data = e.target.result;
+                if(data) {
+                    data.group = groupName;
+                    data.updatedAt = Date.now();
+                    store.put(data).onsuccess = function() {
+                        processed++;
+                        if(processed === checked.length) {
+                            showToast("📁 Modification en masse effectuée !");
+                            document.getElementById('new-batch-group-name').value = ""; updateGroupDatalists(); renderDirectoryList(); updateOfflineDropdown();
+                        }
+                    };
+                }
+            };
+        });
+    }
+
+    function deleteContact(id) {
+        deleteContactDB(id, function() {
+            showToast("🗑️ Contact supprimé.");
+            updateGroupDatalists(); renderDirectoryList(); updateOfflineDropdown(); updateDesign();
+        });
+    }
+
+    function updateOfflineDropdown(filterText = "") {
+        getAllContactsDB(function(contacts) {
+            const dropdown = document.getElementById('select-contact-offline'); const currentSelected = dropdown.value; dropdown.innerHTML = '<option value="">-- Aucun contact sélectionné --</option>';
+            let filtered = [...contacts]; if(filterText.trim() !== "") filtered = filtered.filter(c => c.name.toLowerCase().includes(filterText.toLowerCase()));
+            filtered.forEach(c => { dropdown.innerHTML += `<option value="${c.id}">${c.name} (${c.group})</option>`; }); dropdown.value = currentSelected;
+        });
+    }
+
+    function filterMainDropdown() { updateOfflineDropdown(document.getElementById('search-main-dropdown').value); }
+
+    function loadSelectedContactIntoFields() {
+        const selectedId = document.getElementById('select-contact-offline').value;
+        const syncBadge = document.getElementById('sync-badge');
+        if(!selectedId) {
+            syncBadge.style.display = 'none';
+            return;
+        }
+        let transaction = db.transaction([STORE_NAME], 'readonly');
+        transaction.objectStore(STORE_NAME).get(parseInt(selectedId)).onsuccess = function(e) {
+            const found = e.target.result;
+            if(found) {
+                document.getElementById('direct-name').value = found.name;
+                document.getElementById('direct-phone').value = found.phone1;
+                document.getElementById('direct-company').value = found.company;
+                document.getElementById('direct-title').value = found.title;
+                selectedContactCustoms = found.customFields || [];
+                syncBadge.style.display = 'inline';
+                updateDesign();
+            }
+        };
+    }
+
+    function buildLiveVCard() {
+        const name = document.getElementById('direct-name').value.trim();
+        const phone = document.getElementById('direct-phone').value.trim();
+        const company = document.getElementById('direct-company').value.trim();
+        const title = document.getElementById('direct-title').value.trim();
+        if(!name && !phone) return "";
+        
+        // Optimisation de poids : élimination des espaces et formatage propre
+        let vcardStr = `BEGIN:VCARD\nVERSION:3.0\nFN;CHARSET=UTF-8:${name}\nORG;CHARSET=UTF-8:${company}\nTITLE;CHARSET=UTF-8:${title}\nTEL;TYPE=CELL:${phone.replace(/\s+/g, '')}`;
+        selectedContactCustoms.forEach(field => {
+            const cleanTitle = field.title.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            vcardStr += `\nX-${cleanTitle};CHARSET=UTF-8:${field.val}`;
+        });
+        vcardStr += `\nEND:VCARD`;
+        return vcardStr;
+    }
+
+    function downloadDirectVCF() {
+        const str = buildLiveVCard(); if(!str) { showToast("⚠️ Veuillez remplir le formulaire."); return; }
+        const blob = new Blob([str], {type: 'text/vcard;charset=utf-8'}); const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob); link.download = `${document.getElementById('direct-name').value || 'vcard'}.vcf`; link.click();
+    }
+
+    function exportFullDatabaseBackup() {
+        getAllContactsDB(function(allData) {
+            const jsonString = JSON.stringify(allData, null, 2);
+            const blob = new Blob([jsonString], {type: 'application/json'});
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Backup_QRStudio_DB_${Date.now()}.json`;
+            link.click();
+            showToast("📤 Base de données exportée !");
+        });
+    }
+
+    function importFullDatabaseBackup(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const parsedData = JSON.parse(e.target.result);
+                    if(Array.isArray(parsedData)) {
+                        let importedCount = 0;
+                        parsedData.forEach(contact => {
+                            if(contact.id && contact.name) {
+                                putContactDB(contact, () => {});
+                                importedCount++;
+                            }
+                        });
+                        setTimeout(() => {
+                            showToast(`📥 ${importedCount} contacts importés avec succès !`);
+                            updateGroupDatalists(); renderDirectoryList(); updateOfflineDropdown();
+                        }, 500);
+                    } else { showToast("❌ Format de fichier invalide."); }
+                } catch(err) { showToast("❌ Erreur lors de la lecture du fichier JSON."); }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function updateDesign() {
+        const borderC = document.getElementById('theme-color').value;
+        const qrC = document.getElementById('qr-color').value;
+        const bgC = document.getElementById('bg-badge-color').value;
+        const slogan = document.getElementById('slogan-input').value.trim() || "Scannez";
+
+        document.getElementById('preview-badge').style.backgroundColor = bgC;
+        document.getElementById('ui-border').style.borderColor = borderC;
+        const sloganEl = document.getElementById('ui-slogan'); sloganEl.style.backgroundColor = borderC; sloganEl.style.fontFamily = selectedFontFamily; sloganEl.textContent = slogan;
+
+        const logoDiv = document.getElementById('ui-snap-logo'); logoDiv.style.display = uploadedLogoBase64 ? 'block' : 'none'; logoDiv.innerHTML = uploadedLogoBase64 ? `<img src="${uploadedLogoBase64}">` : '';
+
+        let textData = " ";
+        if (activeTab === 'offline') {
+            textData = buildLiveVCard();
+            const len = textData.trim() === "" ? 0 : textData.length;
+            const bar = document.getElementById('weight-indicator'); const txt = document.getElementById('weight-status-text');
+            
+            if (len === 0) { bar.style.width = '0%'; bar.style.backgroundColor = '#eee'; txt.textContent = "Vide"; txt.style.color = 'gray'; textData = "Formulaire vide"; }
+            else if(len < 180) { bar.style.width = '30%'; bar.style.backgroundColor = '#28a745'; txt.textContent = "Léger (Idéal ✅)"; txt.style.color = '#28a745'; }
+            else if(len < 320) { bar.style.width = '65%'; bar.style.backgroundColor = '#ff9f43'; txt.textContent = "Moyen (Scannable ⚠️)"; txt.style.color = '#ff9f43'; }
+            else { bar.style.width = '100%'; bar.style.backgroundColor = '#dc3545'; txt.textContent = "Lourd (Risque ❌)"; txt.style.color = '#dc3545'; }
+        } else {
+            textData = document.getElementById('input-cloud').value.trim() || "https://google.com";
+        }
+
+        const target = document.getElementById('qrcode-target'); target.innerHTML = "";
+        new QRCode(target, { text: textData, width: 200, height: 200, colorDark: qrC, colorLight: bgC, correctLevel: QRCode.CorrectLevel.H });
+    }
+
+    function generateHDCanvas(callback) {
+        const borderC = document.getElementById('theme-color').value; const qrC = document.getElementById('qr-color').value; const bgC = document.getElementById('bg-badge-color').value; const slogan = document.getElementById('slogan-input').value.toUpperCase();
+        const hidden = document.getElementById('pure-qr-hd'); hidden.innerHTML = "";
+        let textData = (activeTab === 'offline') ? buildLiveVCard() : (document.getElementById('input-cloud').value.trim() || "https://google.com");
+
+        new QRCode(hidden, { text: textData, width: 800, height: 800, colorDark: qrC, colorLight: bgC, correctLevel: QRCode.CorrectLevel.H });
+        setTimeout(() => {
+            const qrCanvas = hidden.querySelector('canvas'); const exportCanvas = document.createElement('canvas'); exportCanvas.width = 1000; exportCanvas.height = 1250; const ctx = exportCanvas.getContext('2d');
+            ctx.fillStyle = bgC; ctx.fillRect(0, 0, 1000, 1250); ctx.lineWidth = 24; ctx.strokeStyle = borderC; ctx.lineJoin = "round"; ctx.strokeRect(50, 50, 900, 950); ctx.drawImage(qrCanvas, 100, 125, 800, 800);
+            
+            const drawSloganAndFinalize = () => {
+                ctx.fillStyle = borderC; ctx.beginPath(); ctx.roundRect(150, 1040, 700, 110, 55); ctx.fill();
+                ctx.fillStyle = "#ffffff"; ctx.font = `bold 42px ${selectedFontFamily}`; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(slogan, 500, 1095);
+                callback(exportCanvas);
+            };
+
+            if(uploadedLogoBase64) {
+                const img = new Image(); img.src = uploadedLogoBase64; img.onload = function() { ctx.fillStyle = "#ffffff"; ctx.beginPath(); ctx.roundRect(410, 435, 180, 180, 30); ctx.fill(); ctx.drawImage(img, 430, 455, 140, 140); drawSloganAndFinalize(); };
+            } else { drawSloganAndFinalize(); }
+        }, 200);
+    }
+
+    function downloadBadge() {
+        generateHDCanvas(function(canvas) {
+            const link = document.createElement('a'); link.href = canvas.toDataURL("image/png"); link.download = 'QR_Master_Badge.png'; link.click();
+        });
+    }
+
+    // SYSTEME DE PARTAGE MOBLE NATIF V19
+    function shareQRCodeNative() {
+        generateHDCanvas(function(canvas) {
+            canvas.toBlob(function(blob) {
+                const file = new File([blob], "QR_Master_Badge.png", { type: "image/png" });
+                if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                    navigator.share({
+                        files: [file],
+                        title: 'Mon QR Code Professionnel',
+                        text: 'Voici ma carte de visite numérique générée avec QR Studio Master.'
+                    }).then(() => showToast("📲 Partage réussi !"))
+                      .catch(() => showToast("ℹ️ Partage annulé ou non complété."));
+                } else {
+                    showToast("⚠️ Le partage direct n'est pas supporté sur ce navigateur. Téléchargez l'image.");
+                }
+            }, "image/png");
+        });
+    }
+
+    function downloadSVGVectoriel() {
+        const borderC = document.getElementById('theme-color').value; 
+        const qrC = document.getElementById('qr-color').value; 
+        const bgC = document.getElementById('bg-badge-color').value; 
+        const slogan = document.getElementById('slogan-input').value.toUpperCase();
+        
+        const canvasObj = document.querySelector('#qrcode-target canvas'); 
+        if(!canvasObj) return;
+        
+        const ctx = canvasObj.getContext('2d');
+        const count = canvasObj.width; 
+        const cellSize = 800 / count; 
+        
+        let pathData = "";
+        for (let row = 0; row < count; row++) {
+            for (let col = 0; col < count; col++) {
+                let imgData = ctx.getImageData(col, row, 1, 1).data;
+                if (imgData[0] < 128) { 
+                    let x = 100 + (col * cellSize);
+                    let y = 125 + (row * cellSize);
+                    pathData += `M${x},${y} h${cellSize} v${cellSize} h-${cellSize} z `;
+                }
+            }
+        }
+
+        let svgString = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" width="100%" height="100%">
+            <rect width="1000" height="1250" fill="${bgC}"/>
+            <rect x="50" y="50" width="900" height="950" rx="40" fill="none" stroke="${borderC}" stroke-width="24"/>
+            <path d="${pathData}" fill="${qrC}"/>`;
+            
+        if(uploadedLogoBase64) {
+            svgString += `<rect x="410" y="435" width="180" height="180" rx="30" fill="#ffffff"/>
+                          <image x="430" y="455" width="140" height="140" href="${uploadedLogoBase64}"/>`;
+        }
+        
+        svgString += `<rect x="150" y="1040" width="700" height="110" rx="55" fill="${borderC}"/>
+            <text x="500" y="1095" fill="#ffffff" font-family="${selectedFontFamily}" font-size="42" font-weight="bold" text-anchor="middle" dominant-baseline="middle">${slogan}</text>
+        </svg>`;
+
+        const blob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'}); 
+        const link = document.createElement('a'); 
+        link.href = URL.createObjectURL(blob); 
+        link.download = 'QR_Master_Pure_Vector.svg'; 
+        link.click();
+        showToast("📐 Fichier SVG pur vectoriel téléchargé !");
+    }
+
+    function exportGroupVCard() {
+        const filterVal = document.getElementById('directory-filter').value || "Tous";
+        getAllContactsDB(function(contacts) {
+            let data = [...contacts];
+            if(filterVal !== "Tous") data = data.filter(c => c.group === filterVal);
+            if(data.length === 0) { showToast("⚠️ Aucun contact à exporter."); return; }
+            
+            let masterVCF = "";
+            data.forEach(c => {
+                masterVCF += `BEGIN:VCARD\nVERSION:3.0\nFN;CHARSET=UTF-8:${c.name}\nORG;CHARSET=UTF-8:${c.company}\nTITLE;CHARSET=UTF-8:${c.title}\nTEL;TYPE=CELL:${c.phone1}\nEND:VCARD\n`;
+            });
+            const blob = new Blob([masterVCF], {type: 'text/vcard;charset=utf-8'});
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+            link.download = `Export_Groupe_${filterVal}.vcf`; link.click();
+        });
+    }
+
+    window.onload = function() {
+        initDB(function() {
+            updateOfflineDropdown(); 
+            updateDesign();
+        });
+    };
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js');
+  }
+</script>
+</body>
+</html>
