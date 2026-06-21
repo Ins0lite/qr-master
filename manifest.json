@@ -3,11 +3,15 @@
   "dir": "ltr",
   "display": "standalone",
   "name": "QR Studio Master",
-  "orientation": "any",
+  "orientation": "portrait",
   "scope": "/",
   "short_name": "QR Master",
-  "start_url": "/",
+  "start_url": "./index.html",
   "theme_color": "#18265e",
   "id": "qr-master",
-  "description": "L'application tout-en-un pour créer des codes QR instantanément et gérer vos contacts. Avec QR Studio Master, générez des codes personnalisés de haute qualité et gérez vos données contacts, personnels, professionnels, groupes de contacts, le tout facilement grâce à une interface moderne et ultra-rapide."
+  "description": "L'application tout-en-un pour créer des codes QR instantanément et gérer vos contacts. Avec QR Studio Master, générez des codes personnalisés de haute qualité et gérez vos données contacts, personnels, professionnels, groupes de contacts, le tout facilement grâce à une interface moderne et ultra-rapide.",
+  "lang": "fr",
+  "categories": [
+    "developer tools"
+  ]
 }
